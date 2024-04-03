@@ -8,6 +8,16 @@ inputMessage2:
     .string "\nEnter a value for y: " # Prompt for second input value (y)
 
 
+additionResultMessage:
+    .string "Here is your addition result (x + y): "
+
+subtractionResultMessage:
+    .string "Here is your subtraction result (x - y): "
+    
+multiplicationResultMessage:
+    .string "Here is your multiplication result (x * y): "
+
+
 newLine:
     .string "\n" # Outputting a newline (for spacing)
 
@@ -83,10 +93,24 @@ main:
     int $0x80 # System interrupt
     
     
+    # Printing out a new line
+    
+    movq $4, %rax # Calls sys_write    
+	movq $1, %rbx # Tells sys_write to write output to standard output ($1 = stdout)
+	movq $newLine, %rcx # Puts subtractionResult in the argument of sys_write for what to output
+	movq $1, %rdx # Length of string message to be written to standard output
+	
+	int $0x80 # System interrupt
+    
+    
+    
+    
+    
     
     # Adding user inputs into their own registers
     
     movq firstInputX, %r8
+    
     movq secondInputY, %r9
     
     
@@ -106,24 +130,56 @@ main:
     
     call addTwoNumbers
     
+    
+    
+    
+    
+    # Overriding values in registers in order to use the same registers again (but for subtraction now)
+    
+    movq firstInputX, %r8
+    
+    movq secondInputY, %r9
+    
+    
+    subq $0x30, %r8 # Subtracting 30 from X (to convert from ASCII to decimal)
+
+    subq $0x30, %r9 # Subtracting 30 from Y (to convert from ASCII to decimal)
+    
+    
+    
     # Calling Subtraction Procedure
     
-    movq firstInputX, %r10
-    
-    movq secondInputY, %r11
-    
-    
-    subq $0x30, %r10 # Subtracting 30 from X (to convert from ASCII to decimal)
-
-    subq $0x30, %r11 # Subtracting 30 from Y (to convert from ASCII to decimal)
-    
     call subtractTwoNumbers
+    
+    
+    
+    
+    
+    # Overriding values in registers in order to use the same registers again (but for multiplication now)
+    
+    movq firstInputX, %r8
+    
+    movq secondInputY, %r9
+    
+    
+    subq $0x30, %r8 # Subtracting 30 from X (to convert from ASCII to decimal)
+
+    subq $0x30, %r9 # Subtracting 30 from Y (to convert from ASCII to decimal)
+    
+    call multiplyTwoNumbers
+    
 
     ret
 
 
 
 
+
+
+            ##### Writing Procedures (Procedure Definitions) ######
+
+
+    
 
     addTwoNumbers:
     
@@ -135,10 +191,23 @@ main:
     
     
     
+    # Printing out a new line
+    
     movq $4, %rax # Calls sys_write    
 	movq $1, %rbx # Tells sys_write to write output to standard output ($1 = stdout)
 	movq $newLine, %rcx # Puts subtractionResult in the argument of sys_write for what to output
 	movq $1, %rdx # Length of string message to be written to standard output
+	
+	int $0x80 # System interrupt
+	
+	
+	
+	# Printing out a message that tells the user what their addition result is
+	
+	movq $4, %rax # Calls sys_write    
+	movq $1, %rbx # Tells sys_write to write output to standard output ($1 = stdout)
+	movq $additionResultMessage, %rcx # Puts subtractionResult in the argument of sys_write for what to output
+	movq $38, %rdx # Length of string message to be written to standard output
 	
 	int $0x80 # System interrupt
     
@@ -161,12 +230,15 @@ main:
     subtractTwoNumbers:
     
     
-    subq %r10, %r11 # Subtracting x and y
+    subq %r9, %r8 # Subtracting x and y
     
-    addq $0x30, %r11 # Converting result from decimal to ASCII
+    addq $0x30, %r8 # Converting result from decimal to ASCII
     
-    movq %r11, subtractionResult # Moving result into subtractionResult (to be printed out)
+    movq %r8, subtractionResult # Moving result into subtractionResult (to be printed out)
     
+    
+    
+    # Printing out a new line
     
     movq $4, %rax # Calls sys_write    
 	movq $1, %rbx # Tells sys_write to write output to standard output ($1 = stdout)
@@ -176,6 +248,15 @@ main:
 	int $0x80 # System interrupt
     
     
+    # Printing out a message that tells the user what their subtraction result is
+	
+	movq $4, %rax # Calls sys_write    
+	movq $1, %rbx # Tells sys_write to write output to standard output ($1 = stdout)
+	movq $subtractionResultMessage, %rcx # Puts subtractionResult in the argument of sys_write for what to output
+	movq $41, %rdx # Length of string message to be written to standard output
+	
+	int $0x80 # System interrupt
+    
     
     
     # Printing out subtractionResult, then exiting procedure
@@ -183,6 +264,49 @@ main:
     movq $4, %rax # Calls sys_write    
 	movq $1, %rbx # Tells sys_write to write output to standard output ($1 = stdout)
 	movq $subtractionResult, %rcx # Puts subtractionResult in the argument of sys_write for what to output
+	movq $1, %rdx # Length of string message to be written to standard output
+	
+	int $0x80 # System interrupt
+	
+	ret
+	
+	
+	
+	
+	multiplyTwoNumbers:
+    
+    imulq %r8, %r9 # Multiplying x and y
+    
+    addq $0x30, %r9 # Converting result from decimal to ASCII
+    
+    movq %r9, multiplicationResult # Moving result into subtractionResult (to be printed out)
+    
+    
+    # Printing out a new line
+    
+    movq $4, %rax # Calls sys_write    
+	movq $1, %rbx # Tells sys_write to write output to standard output ($1 = stdout)
+	movq $newLine, %rcx # Puts subtractionResult in the argument of sys_write for what to output
+	movq $1, %rdx # Length of string message to be written to standard output
+	
+	int $0x80 # System interrupt
+    
+    
+    # Printing out a message that tells the user what their subtraction result is
+	
+	movq $4, %rax # Calls sys_write    
+	movq $1, %rbx # Tells sys_write to write output to standard output ($1 = stdout)
+	movq $multiplicationResultMessage, %rcx # Puts subtractionResult in the argument of sys_write for what to output
+	movq $44, %rdx # Length of string message to be written to standard output
+	
+	int $0x80 # System interrupt
+    
+    
+    # Printing out multiplicationResult, then exiting procedure
+    
+    movq $4, %rax # Calls sys_write    
+	movq $1, %rbx # Tells sys_write to write output to standard output ($1 = stdout)
+	movq $multiplicationResult, %rcx # Puts subtractionResult in the argument of sys_write for what to output
 	movq $1, %rdx # Length of string message to be written to standard output
 	
 	int $0x80 # System interrupt
