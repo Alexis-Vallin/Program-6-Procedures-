@@ -1,0 +1,134 @@
+.data  # Where we are declaring our variables
+     
+inputMessage1:
+    .string "Enter a value for x: " # Prompt for first input value (x)
+    
+
+inputMessage2:
+    .string "\nEnter a value for y: " # Prompt for second input value (y)
+
+
+newLine:
+    .string "\n" # Outputting a newline (for spacing)
+
+
+
+
+.bss # Where uninitialized variables go
+
+    .lcomm firstInputX, 8
+    .lcomm secondInputY, 8
+    
+    .lcomm additionResult, 8
+    .lcomm subtractionResult, 8
+    .lcomm multiplicationResult, 8
+
+
+
+
+.text # Where all of our main instructions go
+
+.global main
+
+main:
+
+
+            ##### Prompting and Reading for X #####
+
+
+
+    # Prompting user for inputting value for X
+
+    movq $4, %rax # Calling sys_write function (to write to standard output)
+    movq $1, %rbx # Writing output to standard output (std_out)
+    movq $inputMessage1, %rcx # Putting the input message into the argument of sys_write
+    movq $21, %rdx
+    
+    int $0x80 # System Interrupt
+    
+    
+    
+    # Reading input from user (to input into X)
+    
+    movq $3, %rax # Calling sys_read function (to write to standard input)
+    movq $0, %rbx # Writing user's input to standard input (std_in) 
+    movq $firstInputX, %rcx # Storing user's input into empty variable
+    movq $0x8, %rdx # Length of bytes we are allocating for the user to enter
+    
+    int $0x80 # System Interrupt
+    
+    
+    
+            ##### Prompting and Reading for Y #####
+    
+    
+    # Prompting user for inputting value for Y
+
+    movq $4, %rax # Calls sys_write    
+  	movq $1, %rbx # Tells sys_write to write output to standard output ($1 = stdout)
+  	movq $inputMessage2, %rcx # Puts inputMessage2 in the argument of sys_write for what to output
+  	movq $22, %rdx # Length of string message to be written to standard output
+	
+	int $0x80 # System interrupt
+	
+
+	
+	# Reading input from user for Second Input (y)
+	
+	  movq $3, %rax # Calls sys_read
+    movq $0, %rbx # Tells sys_read to read input to stdin
+    movq $secondInputY, %rcx # The user's First Input  
+    movq $0x8, %rdx # Length of bytes we are allowing for the user to enter
+    
+    int $0x80 # System interrupt
+    
+    
+    
+    # Adding user inputs into their own registers
+    
+    movq firstInputX, %r8
+    movq secondInputY, %r9
+    
+    
+    subq $0x30, %r8 # Subtracting 30 from X (to convert from ASCII to decimal)
+
+    subq $0x30, %r9 # Subtracting 30 from Y (to convert from ASCII to decimal)
+
+    
+    
+    
+    
+    
+            ##### Calling Procedures ######
+
+    
+    # Calling Addition Procedure
+    
+    call addTwoNumbers
+
+    ret
+
+
+
+
+
+    addTwoNumbers:
+    
+    addq %r8, %r9 # Adding x and y
+    
+    addq $0x30, %r9 # Converting result from decimal to ASCII
+    
+    movq %r9, additionResult # Moving result into additionResult (to be printed out)
+    
+    
+    # Printing our additionResult, then exiting procedure
+    
+    movq $4, %rax # Calls sys_write    
+  	movq $1, %rbx # Tells sys_write to write output to standard output ($1 = stdout)
+  	movq $additionResult, %rcx # Puts additionResult in the argument of sys_write for what to output
+  	movq $1, %rdx # Length of string message to be written to standard output
+	
+  	int $0x80 # System interrupt
+  	
+  	ret
+	
